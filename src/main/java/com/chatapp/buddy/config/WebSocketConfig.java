@@ -6,23 +6,23 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-@CrossOrigin
 @Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    @EnableWebSocketMessageBroker
+    public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        //to register STOMP endpoint
-        registry.addEndpoint("/ws-chatapp").withSockJS();
-        //withSockJS enables that if the websocket connection is not established for some reason,
-        //the connection will be downgraded to HTTP to continue the communication b/w client and server.
-    }
+        @Override
+        public void registerStompEndpoints(StompEndpointRegistry registry) {
+            //to register STOMP endpoint
+            registry.addEndpoint("/ws-chatapp").setAllowedOrigins("http://127.0.0.1:5500/").withSockJS();
+            //withSockJS enables that if the websocket connection is not established for some reason,
+            //the connection will be downgraded to HTTP to continue the communication b/w client and server.
+        }
 
-    @Override
+        @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // for Message Broker
-        config.enableSimpleBroker("/topic");
         config.setApplicationDestinationPrefixes("/app");
+        config.enableSimpleBroker("/topic");
+
     }
 }
