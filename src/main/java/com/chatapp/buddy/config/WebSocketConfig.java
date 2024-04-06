@@ -13,7 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
         @Override
         public void registerStompEndpoints(StompEndpointRegistry registry) {
             //to register STOMP endpoint
-            registry.addEndpoint("/ws-chatapp").setAllowedOrigins("http://127.0.0.1:5500/").withSockJS();
+            registry.addEndpoint("/ws-chatapp").setAllowedOrigins("http://localhost:8080/").withSockJS();
             //withSockJS enables that if the websocket connection is not established for some reason,
             //the connection will be downgraded to HTTP to continue the communication b/w client and server.
         }
