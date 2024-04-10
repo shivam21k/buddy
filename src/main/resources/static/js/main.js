@@ -1,8 +1,8 @@
 'use strict';
 
-var loginPage = document.querySelector('#login-page');
+var usernamePage = document.querySelector('#username-page');
 var chatPage = document.querySelector('#chat-page');
-var loginForm = document.querySelector('#loginForm');
+var usernameForm = document.querySelector('#usernameForm');
 var messageForm = document.querySelector('#messageForm');
 var messageInput = document.querySelector('#message');
 var messageArea = document.querySelector('#messageArea');
@@ -11,49 +11,55 @@ var connectingElement = document.querySelector('.connecting');
 var stompClient = null;
 var username = null;
 
+var colors = [
+    '#2196F3', '#32c787', '#00BCD4', '#ff5652',
+    '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
+];
+
 function connect(event) {
-try{
-    username = document.querySelector('#name').value.trim();
-    if (username) {
-        loginPage.classList.add('hidden');
+    username = document.getElementById('name').value.trim();
+
+    if(username) {
+        usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
 
-        var socket = new SockJS('http://localhost:8080/ws-chatapp');//was failing here - 'added http://localhost:8080'
-        //err = SyntaxError: The URL '/ws-chatapp' is invalid at new r (https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js:2:9312) at HTMLFormElement.connect (file:///C:/Users/Acer/Desktop/buddy/src/main/resources/static/js/script.js:22:22)
+        var socket = new SockJS('/ws-chatapp');
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, onConnected, onError);
     }
     event.preventDefault();
-    }
-catch(err){
-    console.log(err);
-}
 }
 
+
 function onConnected() {
-    stompClient.subscribe('/topic/chat', onMessageReceived);
+    // Subscribe to the Public Topic
+    stompClient.subscribe('/topic/public', onMessageReceived);
+
+    // Tell your username to the server
     stompClient.send("/app/addUser",
         {},
         JSON.stringify({chatUser: username, messageAction: 'JOIN'})
-    );
+    )
 
     connectingElement.classList.add('hidden');
 }
 
-function onError() {
+
+function onError(error) {
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
     connectingElement.style.color = 'red';
 }
 
+
 function sendMessage(event) {
     var messageContent = messageInput.value.trim();
-    if (messageContent && stompClient) {
+    if(messageContent && stompClient) {
         var chatMessage = {
             chatUser: username,
             message: messageInput.value,
-            messageAction: 'MESSAGE',
-            messageTime: null
+            messageTime: "",
+            messageAction: 'MESSAGE'
         };
         stompClient.send("/app/sendMessage", {}, JSON.stringify(chatMessage));
         messageInput.value = '';
@@ -61,12 +67,13 @@ function sendMessage(event) {
     event.preventDefault();
 }
 
+
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
 
     var messageElement = document.createElement('li');
 
-    if (message.messageAction === 'JOIN') {
+    if(message.messageAction === 'JOIN') {
         messageElement.classList.add('event-message');
         message.message = message.chatUser + ' joined!';
     } else if (message.messageAction === 'LEAVE') {
@@ -75,20 +82,21 @@ function onMessageReceived(payload) {
     } else {
         messageElement.classList.add('chat-message');
 
+        var avatarElement = document.createElement('i');
+        var avatarText = document.createTextNode(message.chatUser[0]);
+        avatarElement.appendChild(avatarText);
+        avatarElement.style['background-color'] = getAvatarColor(message.chatUser);
+
+        messageElement.appendChild(avatarElement);
+
         var usernameElement = document.createElement('span');
         var usernameText = document.createTextNode(message.chatUser);
         usernameElement.appendChild(usernameText);
         messageElement.appendChild(usernameElement);
-
-        var iTag = document.createElement("i");
-        var messageTime = document.createTextNode(' ' + message.messageTime);
-        iTag.append(messageTime);
-        messageElement.appendChild(iTag);
     }
 
     var textElement = document.createElement('p');
     var messageText = document.createTextNode(message.message);
-
     textElement.appendChild(messageText);
 
     messageElement.appendChild(textElement);
@@ -97,5 +105,15 @@ function onMessageReceived(payload) {
     messageArea.scrollTop = messageArea.scrollHeight;
 }
 
-loginForm.addEventListener('submit', connect, true);
-messageForm.addEventListener('submit', sendMessage, true);
+
+function getAvatarColor(messageSender) {
+    var hash = 0;
+    for (var i = 0; i < messageSender.length; i++) {
+        hash = 31 * hash + messageSender.charCodeAt(i);
+    }
+    var index = Math.abs(hash % colors.length);
+    return colors[index];
+}
+
+usernameForm.addEventListener('submit', connect, true)
+messageForm.addEventListener('submit', sendMessage, true)
