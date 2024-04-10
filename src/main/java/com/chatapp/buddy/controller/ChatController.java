@@ -19,13 +19,13 @@ public class ChatController {
     }
 
     @MessageMapping("/sendMessage")
-    @SendTo("/topic/chat")
+    @SendTo("/topic/public")
     public ChatMessageDTO chat(@Payload ChatMessageDTO chatMessage) {
         return chatMessageService.saveChatMessageToDB(chatMessage);
     }
 
     @MessageMapping("/addUser")
-    @SendTo("/topic/chat")
+    @SendTo("/topic/public")
     public ChatMessageDTO addUser(@Payload ChatMessageDTO chatMessage, SimpMessageHeaderAccessor headerAccessor) {
         headerAccessor.getSessionAttributes().put("username", chatMessage.getChatUser());
         return chatMessage;
