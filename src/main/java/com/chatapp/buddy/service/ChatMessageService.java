@@ -19,6 +19,7 @@ public class ChatMessageService {
         this.chatMessageRepository = chatMessageRepository;
     }
 
+    //to save chat messages
     public ChatMessageDTO saveChatMessageToDB(ChatMessageDTO chatMessageDTO) {
         ChatMessageModel chatMessage = chatMessageBinder.bind(chatMessageDTO);
         chatMessageRepository.save(chatMessage);
