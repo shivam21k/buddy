@@ -33,7 +33,7 @@ public class WebSocketMessageListener {
                     .chatUser(username)
                     .build();
 
-            messagingTemplate.convertAndSend("/topic/chat", chatMessage);
+            messagingTemplate.convertAndSend("/topic/public", chatMessage);
         }
     }
 }
